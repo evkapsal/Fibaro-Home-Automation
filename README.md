@@ -1,7 +1,8 @@
 # Fibaro-Home-Automation
-For FIbaro Lite/HC2 Python Service
-This Python Service (Running also on Raspberry) can be used to Export Sensors (Devices) from Fibaro Lite/HC
-to an Influxdb Database for further using like Grafana Dashboards.
+For FIbaro Lite/HC2 Python Service.
+
+This Python Service (Running also on Raspberry) can be used to Export Sensors (Devices) and values
+ from Fibaro Lite/HCto an Influxdb Database for further actions  like, Grafana Dashboards, Statistics,etc.
 Inside .py File you can complete the API/DB details (IP, Usern,Pass, DBName) and you are done.
 
 Dependencies for Python:
