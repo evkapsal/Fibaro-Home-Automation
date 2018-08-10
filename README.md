@@ -5,7 +5,7 @@ This Python Service (Running also on Raspberry) can be used to Export Sensors (D
  from Fibaro Lite/HCto an Influxdb Database for further actions  like, Grafana Dashboards, Statistics,etc.
 Inside .py File you can complete the API/DB details (IP, Usern,Pass, DBName) and you are done.
 
-![](https://1drv.ms/u/s!AkXyhV_E0LGhl-s9WIRQQO9Ysr987g)
+![](https://wcfwfq.am.files.1drv.com/y4mrxWHld37i0HaXU0u3nYKuM_wFofTdbFqsMibkYaqLAN0HV_1dzdVmPeqy29UiHrmD1FgycR6S5os-4kOyItrf8z98bqmcSk_sM1Q2OXMoGwvC_syKgTBAmd8v3QQL0K9qpaTdHqA9CYn3aqs4zpLERd5Xw0h9fVp0rpPLnXASe0IDDxiBllGSMkP-UFhqVdVQmmpmj_Grhz4dCLfs6DphQ?width=1024&height=547&cropmode=none)
 
 **Dependencies for Python:**
   sudo pip install influxdb
@@ -19,7 +19,7 @@ Inside .py File you can complete the API/DB details (IP, Usern,Pass, DBName) and
 
 Integration with Zabbix  https://www.zabbix.com/ and <u>mysql</u> as for network devices bandwidth collection through SNMP.  In order to get this information please go to line #672 and fulfill the object ids. You can easily find the ID's from mySQL - table zabbix_history, example: [SELECT * FROM zabbix.history_uint]. For Grafana there is a plugin for Zabbix details here: https://grafana.com/plugins/alexanderzobnin-zabbix-app
 
-![](https://1drv.ms/u/s!AkXyhV_E0LGhl-s7MUshYCaTRooxdA)
+![](https://3satma.am.files.1drv.com/y4mJddmzgyQanqbvBE9Q1B86_N7-8PZ5J6UoiG63zz2K7m9eFkUv9nQ7gFnQCMxDvTMl_7emtwx7azzLGyATNPmSKnY5bWUjncKTwq2rbIRMD7KSS5obvmXFJzQFB7Iko_8Jzm0WSiH1j3PZT-nwX3i0x3aUPVim4JITQN5T6xSYBRs0ajgtgaRjd0vohgbGFVys18Id7RGS2vyhW71zcQZHQ?width=1024&height=519&cropmode=none)
 
 More Updates and Devices are in Roadmap.
 
@@ -58,13 +58,15 @@ Microsoft Azure Services that being used:
 3. Home Network Bandwidth new Object for analytics and visualization.
 4. Power BI API Support 
 
-![](https://1drv.ms/u/s!AkXyhV_E0LGhl-s8K9IpM2yd6Cme7Q)
+**Power BI Pictures**
 
-![](https://1drv.ms/u/s!AkXyhV_E0LGhl-s_XJSqnz3OIIztTw)
+![](https://vayucg.am.files.1drv.com/y4m7_HLEq7vcaQo9C0L2g4uw_alNnJPXGRW2fH7yvO2RdD_rrakz91lrlXqx4rOJL1IToj_ZWVFY8l45k0731No_x67KAN1a8vK9SC5E_X6s4ssX-_m4EhS5WotsAM2hF1Ou5yQ6P24CSYw9iMAPAQNwI1qaG_EEPeRIWlCEj_A9TIkcdqWlujTI1VAcFEbhP_Wee2ic_lG8AFjKl-djfqaDQ?width=1024&height=553&cropmode=none)
 
-![](https://1drv.ms/u/s!AkXyhV_E0LGhl-s-j3RJhxNAVmZy0g)
+![](https://ghwzaa.am.files.1drv.com/y4m4ND6LsU65qsFZQFc7Nkrvw4np3NtslyhRhqJTAnOF1P3f2zvYLsY-XmMEBInfiOqKP_09iJ3aH3T8KzsDWTg3HX7SSqVKo07-nhAF09iu9tEZL02v3AY-CutCIxQst_2lbcYNgGlO1-j88aU4QuVxbojXKDKBax9ZpGvO9tPfdhuCF92XeyZy7__6YXNKzV65yw7YO9X22ubN_h_DFC0Kg?width=1024&height=568&cropmode=none)
 
-![](https://1drv.ms/u/s!AkXyhV_E0LGhl-tA1hrNyzKgqLjAYQ)
+![](https://5qdyxq.am.files.1drv.com/y4mM_KIy3lsww70UmmO4W9EfnOz3avEY7yewZ0MvTqKCt7YGV1cqoRTURr5geg7V1aIBuim3ZRp9jE3uStL0juUxW52xbLrJvhgoPLthRnM4sdXhrDvma6saD838fNm_5CqdXMIX1eRYpbSjSGOntoRpKPElt18YX3AOCezQmB-04czFfVy57fZd7v4cD82piWfofNYiOa8dP2pQ8_We6PmxQ?width=1024&height=547&cropmode=none)
+
+![](https://rx4jga.am.files.1drv.com/y4mNmqyW0aA1GhWpN5gWBFX2--XxeGTe7pid2BlKb_-O2ZpzVkOVmIEewZwHdY6ImX2dP83QnFhAC_5kmwu_cLBGM9YqXWIhdrsJP7qp67cmO43eO-8OT2-8eP5yARsCD5tFEeMhH5w8uWqIZgPgdJHZ3AFEKuHEhbdpskKNEGgZ-_GeZUBzKhIiP3v6jNnOOg_hugZaHt5Q2ikCPr7cfywVw?width=1024&height=588&cropmode=none)
 
 **ROADMAP**
 
