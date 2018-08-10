@@ -5,7 +5,7 @@ This Python Service (Running also on Raspberry) can be used to Export Sensors (D
  from Fibaro Lite/HCto an Influxdb Database for further actions  like, Grafana Dashboards, Statistics,etc.
 Inside .py File you can complete the API/DB details (IP, Usern,Pass, DBName) and you are done.
 
-![](https://1drv.ms/f/s!AkXyhV_E0LGhl-s6iCSaXini6eam6g)
+![](https://1drv.ms/u/s!AkXyhV_E0LGhl-s9WIRQQO9Ysr987g)
 
 **Dependencies for Python:**
   sudo pip install influxdb
