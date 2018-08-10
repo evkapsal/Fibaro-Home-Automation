@@ -270,7 +270,7 @@ while True:
                     sendIOTmessage(json.loads(message))
                 except Exception as e:
                     logging.error(e, message)          
-            elif 'com.fibaro.motionSensor' in p[i]['baseType'] or 'com.fibaro.motionSensor' in p[i]['type'] :
+            elif 'com.fibaro.motionSensor' in p[i]['baseType'] or 'com.fibaro.motionSensor' in p[i]['type'] or 'com.fibaro.FGMS001v2' in p[i]['type'] :
                 #Motion Detector Sensors
                 try:
                     json_body = None
@@ -655,6 +655,55 @@ while True:
                     sendIOTmessage(json.loads(message))
                 except Exception as e:
                     logging.error(e , message)
+            elif 'com.fibaro.humiditySensor' in p[i]['type']:
+                #Humidity Sensors
+                try:
+                    json_body = None
+                    RoomName = None
+                    HumSensRoomID = str(p[i]['roomID'])
+                    RoomT= requests.get("http://" + hcl_host + "/api/rooms/" + HumSensRoomID, auth=(hcl_user, hcl_password))
+                    RoomTResp = json.loads(RoomT.text)
+                    RoomName= RoomTResp['name']
+                    deviceid = p[i]['id']
+                    devicename = p[i]['name']
+                    HumSensDevEnabled= p[i]['enabled']
+                    RHumidity= float(p[i]['properties']['value'])
+                
+                    json_body = [
+                        {
+                            "measurement": "homepi",
+                            "tags": {
+                                "Device": deviceid,
+                                "Name": devicename,
+                                "Room" : RoomName
+                        
+                            },
+                            "time": timestamp,
+                            "fields": {
+                                "DeviceStatus" : HumSensDevEnabled,
+                                "Humidity": RHumidity
+                            }
+                        }
+                    ]
+                    client.write_points(json_body)
+                except Exception as e:
+                    logging.error(e)
+                try:
+                    message = json.dumps(
+                        {
+                                "deviceid": deviceid,
+                                "name": str(devicename),
+                                "room" : str(RoomName),
+                                "time": dateTime,
+							    "Humidity" : RHumidity,
+                                "status" : HumSensDevEnabled,
+                                "DeviceType": "tempSensor",
+                                "Label": 1
+                            }
+                                            )
+                    sendIOTmessage(json.loads(message))
+                except Exception as e:
+                    logging.error(e , message)
             elif 'com.fibaro.hvac' in p[i]['baseType']:
                 #Temperature Sensors
                 try:
@@ -777,4 +826,4 @@ while True:
         logging.error(e , nmessage)
      
 
-    time.sleep(60)            
+    time.sleep(60)    
