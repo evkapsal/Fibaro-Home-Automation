@@ -61,31 +61,7 @@ def str_to_bool(s):
 
 
 
-def sendIOTmessage (message):
-    
-    #Connection Settings
-    deviceID = "fibarohome"
-    iotHubAPIVer = "2018-04-01"
-    iotHubRestURI = "https://vhomeiothub.azure-devices.net/devices/" + deviceID + "/messages/events?" + "api-version=" + iotHubAPIVer
-    SASToken = 'SharedAccessSignature sr=vhomeiothub.azure-devices.net&sig=ckrtQT%2BbGkRP8BAr7MJ4rAHJncDR2xnVTWmgJQCjdX0%3D&se=1562707128&skn=iothubowner'
 
-    Headers = {}
-    Headers['Authorization'] = SASToken
-    Headers['Content-Type'] = "application/json"
-
-    idatetime =  datetime.datetime.now()
-    body = {}
-    body['datetime'] = str(idatetime)
-    body['deviceClient'] = deviceID
-    body['Message'] = message
-
-    # Send Message
-    try:
-        resp = requests.post(iotHubRestURI, json=body, headers=Headers)
-        #print(resp)
-    except Exception as e:
-        logging.error(e)
- 
     
 #Every minute Get Bandwidth from Devices
 def mySQLq (deviceid):
