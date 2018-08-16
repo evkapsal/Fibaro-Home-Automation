@@ -1,3 +1,6 @@
+
+--Send Data to Power BI 
+--To Configure the correct time please change the DATEADD(hour [#number]) cause of UTC Convertion
 SELECT
     message.deviceid AS DeviceID,
     message.room AS ROOM,
@@ -6,109 +9,124 @@ SELECT
     CAST(message.EnergyConsumed as Float) AS EnergyConsumed,
     CAST(message.ActualEnergyConsumed as Float) AS ActualEnergyConsumed,
     CAST(message.ActualMoneyConsumed as Float) AS ActualMoneyConsumed,
-    CAST(message.DimLevel as Float) AS DimmerLevel,
     CAST(message.VoltageValue AS Float) AS voltage,
-    message.powerplugison AS PowerSwitch,
-    message.status AS DeviceStatus,
+    CAST(message.AmpComsumed AS Float) AS AMPS,
+    CAST(message.motionId as bigint) AS MotionSensorID,
+    CAST(message.motionValue as bigint) AS MotionSensorValue,
+    CAST(message.motionBatteryValue as float) AS MotionSensorBatteryLevel,
+    CAST(message.doorId as bigint) AS DoorSensorID,
+    CAST(message.doorValue as bigint) AS DoorSensorValue,
+    CAST(message.motionBatValue as float) AS DoorSensorBatteryLevel,
+    CAST(message.smokeId AS bigint) AS SmokeSensorID,
+    CAST(message.smokeValue AS bigint) AS SmokeSensorValue,
+    CAST(message.smokeBatteryValue as float) AS SmokeSensorBatteryLevel,
+    CAST(message.tempId as bigint) AS TempSensorID,
+    CAST(message.tempValue as float) AS TempSensorValue,
+    CAST(message.humId as bigint) AS HumiditySensorID,
+    CAST(message.humValue as float) AS HumiditySensorValue,
+    CAST(message.luxId AS bigint) AS LuxSensorID,
+    CAST(message.luxValue AS float) AS LuxSensorValue,
+    CAST(message.lightId AS bigint) AS LightSensorID,
+    CAST(message.lightDimValue AS float) AS LightSensorDimValue,
+    CAST(message.lightEnergy AS float) AS LightSensorEnergy,
+    CAST(message.lightPower AS float) AS LightSensorPower,
+    CAST(message.netId as bigint) AS NetworkDeviceID,
+    CAST(message.netValue as float) AS NetworkDeviceBandwidthValue,
     CAST(message.Label AS bigint) AS Label,
     DATEADD(hour, 3, CAST(message.time AS datetime)) AS TIME,
     message.DeviceType AS TYPE
 INTO
-    HomePowertblOUT --YOUR OUTPUT
+    myhomeiot
 FROM
-    fibaroevents  --YOUR INPUT
-WHERE message.DeviceType = 'binarySensor' OR message.DeviceType = 'multilevelSwitch' OR message.DeviceType = 'VoltageSensor'
+    fibaroevents Partition By PartitionId
 
-
-
-
+--Select Power Sensors and Send it to Azure Table Storage
+--To Configure the correct time please change the DATEADD(hour [#number]) cause of UTC Convertion
 SELECT
-    message.deviceid AS DeviceID,
-    message.room AS ROOM,
-    message.name AS DeviceName,
-    CAST(message.SmokeDetection AS bigint) AS SmokeDetection,
-    CAST(message.BatteryLevel as Float) AS BatteryLevel,
-    CAST(message.MotionDetected as bigint) AS MotionDetected,
-    CAST(message.IsSensorArmed AS bigint) AS SensorArmed,
-    CAST(message.IsDoorOpened AS bigint) AS DoorOpened,
-    message.status AS DeviceStatus,
-    CAST(message.Label AS bigint) AS Label,
-    DATEADD(hour, 3, CAST(message.time AS datetime)) AS TIME,
-    message.DeviceType AS TYPE
-INTO
-    HomeSmokeSensortblOUT -YOUR OUTPUT
-FROM
-    fibaroevents  --YOUR INPUT
-WHERE message.DeviceType = 'SmokeSensor' OR message.DeviceType = 'motionsensor' OR message.DeviceType = 'doorSensor'
-
-
-
-
-SELECT
-    message.deviceid AS DeviceID,
-    message.room AS ROOM,
-    message.name AS DeviceName,
-    CAST(message.Temperature AS Float) AS Temperature,
-    CAST(message.Pressure AS Float) AS Pressure,
-    CAST(message.Wind AS Float) AS Wind,
-    CAST(message.Humidity AS Float) AS Humidity,
-    CAST(message.BatteryLevel as Float) AS BatteryLevel,
-    CAST(message.luminance AS Float) AS luminance,
-    message.status AS DeviceStatus,
-    CAST(message.Label AS bigint) AS Label,
-    DATEADD(hour, 3, CAST(message.time AS datetime)) AS TIME,
-    message.DeviceType AS TYPE
-INTO
-    HomeAirConditionOUT -YOUR OUTPUT
-FROM
-    fibaroevents  --YOUR INPUT
-WHERE message.DeviceType = 'airconditionSensor' OR message.DeviceType = 'tempSensor'  OR message.DeviceType = 'OutsideWeather' OR message.DeviceType = 'lightSensor'
-
-SELECT
-    message.deviceid AS DeviceID,
-    message.room AS ROOM,
-    message.name AS DeviceName,
-    CAST(message.Bandwidth as bigint) AS Bandwidth,
-    message.status AS DeviceStatus,
-    CAST(message.Label AS bigint) AS Label,
-    DATEADD(hour, 3, CAST(message.time AS datetime)) AS TIME,
-    message.DeviceType AS TYPE
-INTO
-    HomeSwitchSensortbl -YOUR OUTPUT
-FROM
-    fibaroevents  --YOUR INPUT
-WHERE message.DeviceType = 'networkDevice'
-
-
-SELECT
-    message.deviceid AS DeviceID,
     message.room AS ROOM,
     message.name AS DeviceName,
     CAST(message.PowerConsumed as Float) AS PowerConsumed,
     CAST(message.EnergyConsumed as Float) AS EnergyConsumed,
     CAST(message.ActualEnergyConsumed as Float) AS ActualEnergyConsumed,
     CAST(message.ActualMoneyConsumed as Float) AS ActualMoneyConsumed,
-    CAST(message.DimLevel as Float) AS DimmerLevel,
     CAST(message.VoltageValue AS Float) AS voltage,
-    CAST(message.SmokeDetection AS bigint) AS SmokeDetection,
-    CAST(message.BatteryLevel as Float) AS BatteryLevel,
-    CAST(message.MotionDetected as bigint) AS MotionDetected,
-    CAST(message.IsSensorArmed AS bigint) AS SensorArmed,
-    CAST(message.IsDoorOpened AS bigint) AS DoorOpened,
-    CAST(message.Temperature AS Float) AS Temperature,
-    CAST(message.Bandwidth as bigint) AS Bandwidth,
-    CAST(message.Pressure AS Float) AS Pressure,
-    CAST(message.Wind AS Float) AS Wind,
-    CAST(message.Humidity AS Float) AS Humidity,
-    CAST(message.luminance AS Float) AS luminance,
-    message.powerplugison AS PowerSwitch,
-    message.status AS DeviceStatus,
+    CAST(message.AmpComsumed AS Float) AS AMPS,
     CAST(message.Label AS bigint) AS Label,
     DATEADD(hour, 3, CAST(message.time AS datetime)) AS TIME,
-    message.DeviceType AS TYPE
-INTO 
-    myhomeiot -YOUR OUTPUT
+    message.DeviceType AS TYPE,
+    datetime as timestamp
+INTO
+    HomeIOTPower 
 FROM
-    fibaroevents  --YOUR INPUT
+    fibaroevents  
+WHERE message.DeviceType = 'binarySensor'
+
+--Select IO Sensorsand Send it to Azure Table Storage
+--To Configure the correct time please change the DATEADD(hour [#number]) cause of UTC Convertion
+SELECT
+    message.room AS ROOM,
+    message.name AS DeviceName,
+    CAST(message.motionId as bigint) AS MotionSensorID,
+    CAST(message.motionValue as bigint) AS MotionSensorValue,
+    CAST(message.motionBatValue as float) AS MotionSensorBatteryLevel,
+    CAST(message.doorId as bigint) AS DoorSensorID,
+    CAST(message.doorValue as bigint) AS DoorSensorValue,
+    CAST(message.doorBatteryValue as float) AS DoorSensorBatteryLevel,
+    CAST(message.smokeId AS bigint) AS SmokeSensorID,
+    CAST(message.smokeValue AS bigint) AS SmokeSensorValue,
+    CAST(message.smokeBatteryValue as float) AS SmokeSensorBatteryLevel,
+    CAST(message.Label AS bigint) AS Label,
+    DATEADD(hour, 3, CAST(message.time AS datetime)) AS TIME,
+    message.DeviceType AS TYPE,
+    datetime as timestamp
+INTO
+    HomeIOTio
+FROM
+    fibaroevents  
+WHERE message.DeviceType = 'ioSensor'
+
+--Select Temp Sensorsand Send it to Azure Table Storage
+--To Configure the correct time please change the DATEADD(hour [#number]) cause of UTC Convertion
+SELECT
+    message.room AS ROOM,
+    message.name AS DeviceName,
+    CAST(message.tempId as bigint) AS TempSensorID,
+    CAST(message.tempValue as float) AS TempSensorValue,
+    CAST(message.humId as bigint) AS HumiditySensorID,
+    CAST(message.humValue as float) AS HumiditySensorValue,
+    CAST(message.luxId AS bigint) AS LuxSensorID,
+    CAST(message.luxValue AS float) AS LuxSensorValue,
+    CAST(message.lightId AS bigint) AS LightSensorID,
+    CAST(message.lightDimValue AS float) AS LightSensorDimValue,
+    CAST(message.lightEnergy AS float) AS LightSensorEnergy,
+    CAST(message.lightPower AS float) AS LightSensorPower,
+    CAST(message.Label AS bigint) AS Label,
+    DATEADD(hour, 3, CAST(message.time AS datetime)) AS TIME,
+    message.DeviceType AS TYPE,
+    datetime as timestamp
+INTO
+    HomeIOTTemp
+FROM
+    fibaroevents  
+WHERE message.DeviceType = 'tempSensor'
+
+
+--Select Network Sensorsand Send it to Azure Table Storage
+--To Configure the correct time please change the DATEADD(hour [#number]) cause of UTC Convertion
+
+SELECT
+    message.room AS ROOM,
+    message.name AS DeviceName,
+    CAST(message.netId as bigint) AS NetworkDeviceID,
+    CAST(message.netValue as float) AS NetworkDeviceBandwidthValue,
+    CAST(message.Label AS bigint) AS Label,
+    DATEADD(hour, 3, CAST(message.time AS datetime)) AS TIME,
+    message.DeviceType AS TYPE,
+    datetime as timestamp
+INTO
+    HomeIOTNet
+FROM
+    fibaroevents  
+WHERE message.DeviceType = 'netSensor'
 
     
