@@ -14,18 +14,23 @@ SELECT
     CAST(message.motionId as bigint) AS MotionSensorID,
     CAST(message.motionValue as bigint) AS MotionSensorValue,
     CAST(message.motionBatteryValue as float) AS MotionSensorBatteryLevel,
+    message.doorSName AS DoorSensorName,
     CAST(message.doorId as bigint) AS DoorSensorID,
     CAST(message.doorValue as bigint) AS DoorSensorValue,
     CAST(message.motionBatValue as float) AS DoorSensorBatteryLevel,
+    message.smokeSName AS SmokeSensorName,
     CAST(message.smokeId AS bigint) AS SmokeSensorID,
     CAST(message.smokeValue AS bigint) AS SmokeSensorValue,
     CAST(message.smokeBatteryValue as float) AS SmokeSensorBatteryLevel,
     CAST(message.tempId as bigint) AS TempSensorID,
     CAST(message.tempValue as float) AS TempSensorValue,
+    message.humSensorName AS HumiditySensorName,
     CAST(message.humId as bigint) AS HumiditySensorID,
     CAST(message.humValue as float) AS HumiditySensorValue,
+    message.luxSensorName AS LuxSensorName,
     CAST(message.luxId AS bigint) AS LuxSensorID,
     CAST(message.luxValue AS float) AS LuxSensorValue,
+    message.lightSensorName AS LightSensorName,
     CAST(message.lightId AS bigint) AS LightSensorID,
     CAST(message.lightDimValue AS float) AS LightSensorDimValue,
     CAST(message.lightEnergy AS float) AS LightSensorEnergy,
@@ -61,7 +66,7 @@ FROM
     fibaroevents  
 WHERE message.DeviceType = 'binarySensor'
 
---Select IO Sensorsand Send it to Azure Table Storage
+--Select IO Sensors and Send it to Azure Table Storage
 --To Configure the correct time please change the DATEADD(hour [#number]) cause of UTC Convertion
 SELECT
     message.room AS ROOM,
@@ -69,9 +74,11 @@ SELECT
     CAST(message.motionId as bigint) AS MotionSensorID,
     CAST(message.motionValue as bigint) AS MotionSensorValue,
     CAST(message.motionBatValue as float) AS MotionSensorBatteryLevel,
+    message.doorSName AS DoorSensorName,
     CAST(message.doorId as bigint) AS DoorSensorID,
     CAST(message.doorValue as bigint) AS DoorSensorValue,
     CAST(message.doorBatteryValue as float) AS DoorSensorBatteryLevel,
+    message.smokeSName AS SmokeSensorName,
     CAST(message.smokeId AS bigint) AS SmokeSensorID,
     CAST(message.smokeValue AS bigint) AS SmokeSensorValue,
     CAST(message.smokeBatteryValue as float) AS SmokeSensorBatteryLevel,
@@ -85,17 +92,20 @@ FROM
     fibaroevents  
 WHERE message.DeviceType = 'ioSensor'
 
---Select Temp Sensorsand Send it to Azure Table Storage
+--Select Temp Sensors and Send it to Azure Table Storage
 --To Configure the correct time please change the DATEADD(hour [#number]) cause of UTC Convertion
 SELECT
     message.room AS ROOM,
     message.name AS DeviceName,
     CAST(message.tempId as bigint) AS TempSensorID,
     CAST(message.tempValue as float) AS TempSensorValue,
+    message.humSensorName AS HumiditySensorName,
     CAST(message.humId as bigint) AS HumiditySensorID,
     CAST(message.humValue as float) AS HumiditySensorValue,
+    message.luxSensorName AS LuxSensorName,
     CAST(message.luxId AS bigint) AS LuxSensorID,
     CAST(message.luxValue AS float) AS LuxSensorValue,
+    message.lightSensorName AS LightSensorName,
     CAST(message.lightId AS bigint) AS LightSensorID,
     CAST(message.lightDimValue AS float) AS LightSensorDimValue,
     CAST(message.lightEnergy AS float) AS LightSensorEnergy,
