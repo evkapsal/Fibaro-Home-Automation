@@ -90,16 +90,85 @@ def mySQLq (deviceid):
 #Country KW price
 kwmoneyvalue = 0.12
 
-#String-to-Bool
-def str_to_bool(s):
+#String-to-Bool opposite abnormal
+def fstr_to_bool(s):
     if s == 'true':
-            return True
-    elif s == 'false':
             return False
-    elif s == 'True':
+    elif s == 'false':
             return True
+    elif s == 'True':
+            return False
     elif s == 'False':
-        return False
+        return True
+
+
+class sensorEvents(object):
+        def __init__(self, deviceType,  ValueNew, Timestamp ):
+            self.deviceType = deviceType
+            self.ValueNew = ValueNew
+            self.Timestamp = Timestamp
+          
+
+
+def mySQLq (deviceid):
+    
+    id = str(deviceid)
+    dt = datetime.datetime.utcnow()
+    time2 = calendar.timegm(dt.utctimetuple())
+    time1 = time2 - 60
+    tm1= str(time1)
+    tm2= str(time2)
+    cnx = mysql.connector.connect(user='zabbix', password='zabbix', host='192.168.1.231', database='zabbix' )
+    cnx.autocommit = True
+    cursor = cnx.cursor()
+    qck= ("SELECT value FROM zabbix.history_uint " 
+          "WHERE itemid = %s AND clock BETWEEN %s AND %s GROUP BY clock DIV 1 * 1 ORDER BY clock desc")
+    f= cursor.execute(qck, (id, tm1, tm2))
+    r= str(cursor.fetchone())
+    re= r.replace(",","")
+    result = json.dumps({"DeviceID": id, "Bandwidth": re, "Timestamp": str(dt)})
+    result = result.replace("(","")
+    result = result.replace(")","")
+    cursor.close()
+    cnx.close()
+    return result
+
+def findIOSensorValues(deviceID):
+    messagesold =[]
+    def timestampTodate(tmi):
+        tms = int(tmi)
+        try:
+            dts = datetime.datetime.utcfromtimestamp(tms).strftime('%Y-%m-%d %H:%M:%S')
+            return dts
+        except Exception as c:
+            logging.error(c)      
+    try:
+        devid= str(deviceID)
+        #Check for Previous Events in Event Panel during Time Period [now - 2 min] (optimize through service loop time)
+        ptime= datetime.datetime.now()
+        ptime1= datetime.datetime.now() - datetime.timedelta(minutes=2)
+        tmstamp= int(time.mktime(ptime.timetuple()))
+        tmstamp1 = int(time.mktime(ptime1.timetuple()))
+
+        pSensorEvents = requests.get("http://" + hcl_host + "/api/panels/event?from="+ str(tmstamp1) + "&to=" + str(tmstamp) + "&deviceID=" + devid,  auth=(hcl_user, hcl_password))
+
+    except Exception as c:
+        logging.error(c)
+    finally:
+        strgl=len(pSensorEvents.text)
+        if strgl > 2 :
+            pSensorEventsobjs= json.loads(pSensorEvents.text)
+            c= len(pSensorEventsobjs)
+            if c > 0:
+                for i in range(0,c):
+                    mSensortimestamp = timestampTodate(tmi=pSensorEventsobjs[i]['timestamp'])
+                    mSensorNV= int(pSensorEventsobjs[i]['newValue'])
+                    mSensorType= pSensorEventsobjs[i]['deviceType']
+                    mSEv = sensorEvents(deviceType= mSensorType, ValueNew= mSensorNV, Timestamp= mSensortimestamp)
+                    rSEv = json.dumps(mSEv.__dict__)
+                    messagesold.append(rSEv) 
+                return messagesold
+
 
 class powerSensor(object):
     def __init__(self, name, room, time, EnergyConsumed, AmpComsumed, VoltageValue, ActualEnergyConsumed , ActualMoneyConsumed, Label , PowerConsumed):
@@ -151,7 +220,7 @@ class powerSensor(object):
 
 
 class ioSensor(object):
-    def __init__(self, name, room, time, motionId, motionValue, motionBatValue, doorId, doorValue , doorBatteryValue, smokeId, smokeValue, smokeBatteryValue, Label):
+    def __init__(self, name, room, time, motionId, motionValue, motionBatValue, doorSName, doorId, doorValue , doorBatteryValue, smokeSName, smokeId, smokeValue, smokeBatteryValue, Label):
         self.time = time
         self.name = name
         self.room = room
@@ -161,8 +230,10 @@ class ioSensor(object):
         self.doorId = doorId
         self.doorValue  = doorValue 
         self.doorBatteryValue = doorBatteryValue
+        self.doorSName  = doorSName
         self.smokeId = smokeId
         self.smokeValue = smokeValue
+        self.smokeSName = smokeSName
         self.smokeBatteryValue = smokeBatteryValue
         self.Label = Label
         self.DeviceType = "ioSensor"
@@ -175,16 +246,19 @@ class ioSensor(object):
         return ndate
 
 class tempSensor(object):
-    def __init__(self, name, room, time, tempId, tempValue, humId, humValue , luxId, luxValue, lightId, lightEnergy, lightPower, lightDimValue, Label):
+    def __init__(self, name, room, time, tempId, tempValue, humSensorName, humId, humValue , luxSensorName, luxId, luxValue, lightSensorName, lightId, lightEnergy, lightPower, lightDimValue, Label):
         self.time = time
         self.name = name
         self.room = room
         self.tempId = tempId
         self.tempValue = tempValue
+        self.humSensorName = humSensorName
         self.humId = humId
         self.humValue = humValue
+        self.luxSensorName = luxSensorName
         self.luxId = luxId
         self.luxValue = luxValue
+        self.lightSensorName = lightSensorName
         self.lightId = lightId
         self.lightDimValue = lightDimValue
         self.lightEnergy = lightEnergy
@@ -217,11 +291,8 @@ class netSensor(object):
         return ndate
 
 while True:
-    #Start Devices Processing --> Grafana
-    json_propertyvalues = requests.get("http://" + hcl_host + "/api/devices", auth=(hcl_user, hcl_password))
-    p = json.loads(json_propertyvalues.text)
-    l = len(p)
-
+    
+    #Master Variables
     client = InfluxDBClient(host, port, user, password, dbname,retries=3)
     timestamp = calendar.timegm(time.gmtime()) * 1000000000
     dateTime = str(datetime.datetime.utcnow())
@@ -254,7 +325,8 @@ while True:
                     for o in range(0,f):
                         motionSensors.append(fmotionSensorsobjs[o])
                 else:
-                    motionSensors.append(fmotionSensorsobjs[0])                      
+                    motionSensors.append(fmotionSensorsobjs[0])
+            
         try:
             otherMotionSensorsRequest = requests.get("http://" + hcl_host + "/api/devices/?roomID=" + homeRoomId +"&type=com.fibaro.motionSensor",  auth=(hcl_user, hcl_password))
         except Exception as c:
@@ -286,6 +358,7 @@ while True:
                 else:
                     motionSensors.append(ofmotionSensorsobjs[0])
         
+       
 
         #Collect Door Sensors
         doorSensors = []
@@ -321,8 +394,8 @@ while True:
                         smokeSensors.append(smokeSensorsobjs[r])
                 else:
                     smokeSensors.append(smokeSensorsobjs[0])
+        
         #Process Sensor Objects
-
         m1= len(motionSensors)
         d1= len(doorSensors)
         s1= len(smokeSensors)
@@ -342,44 +415,107 @@ while True:
                         motionSensorID= 0
                         motionValue= 0
                         motionBatteryValue= 0
+                        motionSensorname = "Not Available"
                 else:
                     motionSensorID= 0
                     motionValue= 0
                     motionBatteryValue= 0
+                    motionSensorname = "Not Available"
                
                 if d1 > 0:
                     try:
                        doorSensorID=doorSensors[j]["id"]
                        doorSensorValue = str_to_bool(doorSensors[j]['properties']['value'])
-                       doorBatteryValue = motionSensors[j]['properties']['batteryLevel']
-                       motionSensorname = doorSensors[j]['name']
+                       doorBatteryValue = doorSensors[j]['properties']['batteryLevel']
+                       doorSensorname = doorSensors[j]['name']
                     except IndexError:
                         doorSensorID= 0
                         doorSensorValue= 0
                         doorBatteryValue = 0
+                        doorSensorname = "Not Available"
                 else:
                     doorSensorID= 0
                     doorSensorValue= 0
                     doorBatteryValue = 0
+                    doorSensorname = "Not Available"
 
                 if s1 > 0:
                     try:
                        smokeSensorID=smokeSensors[j]["id"]
                        smokeSensorValue = str_to_bool(smokeSensors[j]['properties']['value'])
-                       smokeBatteryValue = motionSensors[j]['properties']['batteryLevel']
-                       motionSensorname = smokeSensors[j]['name']
+                       smokeBatteryValue = smokeSensors[j]['properties']['batteryLevel']
+                       smokeSensorname = smokeSensors[j]['name']
                     except IndexError:
                         smokeSensorID= 0
                         smokeSensorValue= 0
                         smokeBatteryValue = 0
+                        smokeSensorname = "Not Available"
                 else:
                     smokeSensorID= 0
                     smokeSensorValue= 0
                     smokeBatteryValue = 0
+                    smokeSensorname = "Not Available"
                 
-                ioSensorObj= ioSensor(name=motionSensorname, time=dateTime, room= homeRoomName, motionId= motionSensorID, motionValue= motionValue, motionBatValue=motionBatteryValue, doorId= doorSensorID, doorValue= doorSensorValue, doorBatteryValue= doorBatteryValue, smokeId= smokeSensorID, smokeValue= smokeSensorValue, smokeBatteryValue=smokeBatteryValue, Label= 1) 
+                ioSensorObj= ioSensor(name=motionSensorname, doorSName=doorSensorname, smokeSName=smokeSensorname, time=dateTime, room= homeRoomName, motionId= motionSensorID, motionValue= motionValue, motionBatValue=motionBatteryValue, doorId= doorSensorID, doorValue= doorSensorValue, doorBatteryValue= doorBatteryValue, smokeId= smokeSensorID, smokeValue= smokeSensorValue, smokeBatteryValue=smokeBatteryValue, Label= 1) 
                 smessage = json.dumps(ioSensorObj.__dict__)
                 sendIOTmessage(json.loads(smessage))
+
+                #Older Event Processing
+                moValues =[]
+                doValues= []
+                smValues=[]
+
+                if motionSensorID != 0:
+                    mOV= findIOSensorValues(deviceID= motionSensorID)
+                    if mOV:
+                        ml1 =len(mOV)
+                        for ui in range (0,ml1):
+                            moValues.append(json.loads(mOV[ui]))
+                if doorSensorID != 0 :
+                    dOV= findIOSensorValues(deviceID= doorSensorID)
+                    if dOV:
+                        ml2 =len(dOV)
+                        for uoi in range (0,ml2):          
+                            doValues.append(json.loads(dOV[uoi]))
+                if smokeSensorID != 0:
+                    sOV= findIOSensorValues(deviceID= smokeSensorID)
+                    if sOV:
+                        ml3 =len(sOV)
+                        for uti in range(0, ml3):
+                            smValues.append(json.loads(sOV[uti]))
+                
+
+                ms = len(moValues)
+                ds =len(doValues)
+                ss= len (smValues)
+                folv=[ms,ds, ss]
+                foMAX = max(folv)
+                if foMAX > 0:
+                    for p in range(0,foMAX):
+                        try:
+                            oldVm = 0
+                            oldVd = 0
+                            oldVs = 0
+
+                            if ms > 0:
+                                oldVm = moValues[p]['ValueNew']
+                                oldDt = moValues[p]['Timestamp']
+
+                            if ds > 0:
+                                oldVd = doValues[p]['ValueNew']
+                                oldDt = doValues[p]['Timestamp']
+
+                            if ss > 0:
+                                oldVs = smValues[p]['ValueNew']
+                                oldDt = smValues[p]['Timestamp']
+
+                            iolSensorObj= ioSensor(name=motionSensorname, time=oldDt, doorSName=doorSensorname, smokeSName=smokeSensorname,room= homeRoomName, motionId= motionSensorID, motionValue= oldVm, motionBatValue=motionBatteryValue, doorId= doorSensorID, doorValue= oldVd, doorBatteryValue= doorBatteryValue, smokeId= smokeSensorID, smokeValue= oldVs, smokeBatteryValue=smokeBatteryValue, Label= 1) 
+                            slmessage = json.dumps(iolSensorObj.__dict__)
+                            sendIOTmessage(json.loads(slmessage))
+                        except Exception as c:
+                            logging.error(c)
+                
+                
                 #print(smessage)
             except Exception as c:
                 logging.error(c)
@@ -497,47 +633,56 @@ while True:
             try:
                 if a1 > 0:
                     try:
-                        sensorName = tempSensors[j]['name']
                         if  "com.fibaro.yrWeather" in tempSensors[j]['type']:
                             humidityId = tempSensors[j]['id']
                             humidityValue = tempSensors[j]['properties']["Humidity"]
+                            humSensorName =  tempSensors[j]['name']
                             
                         elif "com.fibaro.humiditySensor" in tempSensors[j]['type']:
                             humidityId = tempSensors[j]['id']
                             humidityValue = tempSensors[j]['properties']["value"]
+                            humSensorName =  tempSensors[j]['name']
                            
                         else:
                             humidityValue = 0
                             humidityId = 0
                             tempSensorID= tempSensors[j]['id']
                             tempValue= tempSensors[j]['properties']['value']
+                            sensorName = tempSensors[j]['name']
+                            humSensorName =  "Not Available"
                         
                     except IndexError:
                         tempSensorID= 0
                         tempValue= 0
                         humidityId = 0
                         humidityValue = 0
+                        sensorName = "Not Available"
+                        humSensorName =  "Not Available"
                 else:
                     tempSensorID= 0
                     tempValue= 0
                     humidityId = 0
                     humidityValue = 0
+                    sensorName = "Not Available"
+                    humSensorName =  "Not Available"
                
                 if b1 > 0:
                     try:
-                       sensorName = luxSensors[j]['name']
+                       luxsensorName = luxSensors[j]['name']
                        luxSensorID=luxSensors[j]["id"]
                        luxSensorValue = luxSensors[j]['properties']['value']
                     except IndexError:
                         luxSensorID= 0
                         luxSensorValue= 0
+                        luxsensorName = "Not Available"
                 else:
                     luxSensorID= 0
                     luxSensorValue= 0
+                    luxsensorName = "Not Available"
 
                 if c1 > 0:
                     try:
-                        sensorName = lightsSensors[j]['name']
+                        lightSensorName = lightsSensors[j]['name']
 
                         if "com.fibaro.multilevelSwitch" in lightsSensors[j]['type']:
                             lightsEnergy= 0
@@ -556,15 +701,21 @@ while True:
                         lightsSensorValue= 0
                         lightsEnergy = 0
                         lightsPower = 0
+                        lightSensorName = "Not Available"
                 else:
                     lightsSensorID= 0
                     lightsSensorValue= 0
                     lightsEnergy = 0
                     lightsPower = 0
+                    lightSensorName = "Not Available"
                 
-                lightsSensorObj= tempSensor(name=sensorName,room=homeRoomName,time= dateTime, tempId= tempSensorID, tempValue= tempValue, humId= humidityId, humValue= humidityValue, luxId= luxSensorID, luxValue= luxSensorValue, lightId= lightsSensorID, lightEnergy= lightsEnergy, lightPower= lightsPower, lightDimValue= lightsSensorValue, Label= 1)
+                lightsSensorObj= tempSensor(name=sensorName,room=homeRoomName, humSensorName=humSensorName, luxSensorName=luxsensorName, lightSensorName=lightSensorName, time= dateTime, tempId= tempSensorID, tempValue= tempValue, humId= humidityId, humValue= humidityValue, luxId= luxSensorID, luxValue= luxSensorValue, lightId= lightsSensorID, lightEnergy= lightsEnergy, lightPower= lightsPower, lightDimValue= lightsSensorValue, Label= 1)
                 tmessage = json.dumps(lightsSensorObj.__dict__)
                 sendIOTmessage(json.loads(tmessage))
+
+                
+
+
                 #print(tmessage)
             except Exception as c:
                 logging.error(c)
@@ -590,16 +741,16 @@ while True:
         n1= len(powerSensors)
 
         if n1 >0:
-            for i in range(0, n1):
-                if 'isLight' not in powerSensors[i]['properties'].keys():
+            for pi in range(0, n1):
+                if 'energy' in powerSensors[pi]['properties'].keys():
                     #Power Switch Sensors
                     try:
                         #Continue Object Process
-                        deviceId = powerSensors[i]['id']
-                        deviceIdS = str(powerSensors[i]['id'])
-                        deviceName = powerSensors[i]['name']
-                        sPower= float(powerSensors[i]['properties']['power'])
-                        sEnergy= float(powerSensors[i]['properties']['energy'])
+                        deviceId = powerSensors[pi]['id']
+                        deviceIdS = str(powerSensors[pi]['id'])
+                        deviceName = powerSensors[pi]['name']
+                        sPower= float(powerSensors[pi]['properties']['power'])
+                        sEnergy= float(powerSensors[pi]['properties']['energy'])
 
                         #Get Consumption Energy from Graph
                         sconsumptionreq= requests.get("http://" + hcl_host + "/api/energy/now/now/summary-graph/devices/power/" + deviceIdS, auth=(hcl_user, hcl_password))
@@ -613,18 +764,18 @@ while True:
                         finalmoneyconsumed =  sconsumptionmoney / 1000 * kwmoneyvalue
 
                         #Get Parent Device 
-                        parentId= str(powerSensors[i]['parentId'])
+                        parentId= str(powerSensors[pi]['parentId'])
                         parentDevice=  requests.get("http://" + hcl_host + "/api/devices/?parentId=" + parentId,  auth=(hcl_user, hcl_password))
 
                         #Get Reference devices
                         parentObject = json.loads(parentDevice.text)
                         t = len(parentObject)
-                        for i in range(0, t):
-                            if 'unit' in parentObject[i]['properties'].keys():
-                                if 'A' in parentObject[i]['properties']['unit']:
-                                    amp= float(parentObject[i]['properties']['value'])
-                                elif 'V' in parentObject[i]['properties']['unit']:
-                                    volt= float(parentObject[i]['properties']['value'])
+                        for oui in range(0, t):
+                            if 'unit' in parentObject[oui]['properties'].keys():
+                                if 'A' in parentObject[oui]['properties']['unit']:
+                                    amp= float(parentObject[oui]['properties']['value'])
+                                elif 'V' in parentObject[oui]['properties']['unit']:
+                                    volt= float(parentObject[oui]['properties']['value'])
                 
                         deviceObj = powerSensor(name= deviceName, room= homeRoomName, time=dateTime, AmpComsumed= amp, EnergyConsumed=sEnergy, VoltageValue= volt, ActualEnergyConsumed= sconsumption, ActualMoneyConsumed= finalmoneyconsumed, Label= 1, PowerConsumed=sPower)
                         vmessage = json.dumps(deviceObj.__dict__)
@@ -680,9 +831,13 @@ while True:
                     logging.error(e)    
 
 
+    #Start Devices Processing --> Grafana
+    json_propertyvalues = requests.get("http://" + hcl_host + "/api/devices", auth=(hcl_user, hcl_password))
+    p = json.loads(json_propertyvalues.text)
+    qz = len(p)
 
     #Start Grafana Process
-    for i in range(0, l):
+    for i in range(0, qz):
         if 'baseType' in p[i]: 
             if 'com.fibaro.weather' in p[i]['baseType']:
                 #Weather Device properties
@@ -880,8 +1035,7 @@ while True:
                 except Exception as e:
                     logging.error(e)
             elif 'com.fibaro.binarySwitch' in p[i]['type']:
-                #if not hasattr((p[i]['properties']), 'isLight'):
-                if 'isLight' not in p[i]['properties'].keys():
+                if 'energy' in p[i]['properties'].keys():
                     #Power Switch Sensors
                     try:
                         PowerSwitchRoomID = str(p[i]['roomID'])
@@ -1117,4 +1271,9 @@ while True:
      
 
     time.sleep(30)
+
+
+
+
+
    
