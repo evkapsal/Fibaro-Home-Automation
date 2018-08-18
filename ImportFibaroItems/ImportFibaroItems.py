@@ -6,6 +6,7 @@ from influxdb import InfluxDBClient
 import logging
 import datetime
 import mysql.connector
+import random
 
 #Fibaro Appliance
 hcl_host = "YOUR-FIBARO-IP"
@@ -236,41 +237,6 @@ class powerSensor(object):
         self.PowerConsumed = PowerConsumed
         self.DeviceType = "binarySensor"
     
-    def addmilisecadd(self):
-        fdate= str(datetime.datetime.utcnow() + datetime.timedelta(microseconds=35))
-        return fdate
-    def addmilisecmin(self):
-        ndate= str(datetime.datetime.utcnow() - datetime.timedelta(microseconds=35))
-        return ndate
-    #Function to send fake data for Azure ML Training
-    def sendFakeDataForMLTrainingA(self):
-        self.time = time
-        self.name = name
-        self.room = room
-        self.EnergyConsumed = EnergyConsumed + 235
-        self.AmpComsumed = AmpComsumed + 6
-        self.VoltageValue = VoltageValue + 89
-        self.ActualEnergyConsumed  = ActualEnergyConsumed + 365 
-        self.ActualMoneyConsumed = ActualMoneyConsumed + 7.8
-        self.Label = 0
-        self.PowerConsumed = PowerConsumed
-        self.DeviceType = "binarySensor"
-        return self
-    def sendFakeDataForMLTrainingB(self):
-        self.time = time
-        self.name = name
-        self.room = room
-        self.EnergyConsumed = EnergyConsumed - 235
-        self.AmpComsumed = AmpComsumed - 6
-        self.VoltageValue = VoltageValue - 89
-        self.ActualEnergyConsumed  = ActualEnergyConsumed - 365 
-        self.ActualMoneyConsumed = ActualMoneyConsumed - 7.8
-        self.Label = 0
-        self.PowerConsumed = PowerConsumed
-        self.DeviceType = "binarySensor"
-        return self
-
-
 class ioSensor(object):
     def __init__(self, name, room, time, motionId, motionValue, motionBatValue, doorSName, doorId, doorValue , doorBatteryValue, smokeSName, smokeId, smokeValue, smokeBatteryValue, Label):
         self.time = time
