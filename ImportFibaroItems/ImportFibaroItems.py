@@ -87,8 +87,60 @@ def mySQLq (deviceid):
     cnx.close()
     return result
 
+########################################################
 #Country KW price
 kwmoneyvalue = 0.12
+#######################################################
+
+#######################################################
+#Switches (bool) for Sending Fake Data to Azure IOT Hub.
+#In case you don't want to send Fake data,
+#change the valus to False
+########################################################
+SendFakePowerData = True
+SendFakeIOData = True
+SendFakeTempData = True
+########################################################
+
+
+def fakedataPower(fvalue):
+    #fake data return for Voltage
+    if fvalue == "Volt":
+        return str(random.uniform(0,340))
+    #fake data return for Amp
+    elif fvalue == "Amp":
+        return str(random.uniform(0,16))
+    #fake data return for Energy
+    elif fvalue == "Energy":
+        return str(random.uniform(0,18000))
+    #fake data return for Euro Consumption
+    elif fvalue == "Euro":
+        return str(random.uniform(0,29))
+
+def fakedataIO(ivalue):
+    #fake data return for Voltage
+    if ivalue :
+        return str(random.randint(0,1))
+
+
+def fakedatatemp(tvalue):
+    #fake data return for Voltage
+    if tvalue == "Temp":
+        return str(random.uniform(0,80))
+    #fake data return for Amp
+    elif tvalue == "Hum":
+        return str(random.uniform(0,120))
+    #fake data return for Energy
+    elif tvalue == "Lux":
+        return str(random.randint(0,2000))
+    #fake data return for Euro Consumption
+    elif tvalue == "Dim":
+        return str(random.randint(0,100))
+    elif tvalue == "LPower":
+        return str(random.uniform(0,18000))
+    elif tvalue == "LEnergy":
+        return str(random.uniform(0,16))
+
 
 #String-to-Bool opposite abnormal
 def fstr_to_bool(s):
@@ -459,6 +511,27 @@ while True:
                 ioSensorObj= ioSensor(name=motionSensorname, doorSName=doorSensorname, smokeSName=smokeSensorname, time=dateTime, room= homeRoomName, motionId= motionSensorID, motionValue= motionValue, motionBatValue=motionBatteryValue, doorId= doorSensorID, doorValue= doorSensorValue, doorBatteryValue= doorBatteryValue, smokeId= smokeSensorID, smokeValue= smokeSensorValue, smokeBatteryValue=smokeBatteryValue, Label= 1) 
                 smessage = json.dumps(ioSensorObj.__dict__)
                 sendIOTmessage(json.loads(smessage))
+		
+		#Send IO Fake Data
+                if SendFakeIOData == True:
+                    if motionSensorID != 0:
+                        fmotionValue = fakedataIO(ivalue=1)
+                    else:
+                        fmotionValue = 0
+
+                    if doorSensorID != 0:
+                        fdoorValue = fakedataIO(ivalue=1)
+                    else:
+                        fdoorValue = 0
+                    if smokeSensorID != 0:
+                        fsmokeValue = fakedataIO(ivalue=1)
+                    else:
+                        fsmokeValue = 0
+
+
+                    fiolSensorObj= ioSensor(name=motionSensorname, time=dateTime, doorSName=doorSensorname, smokeSName=smokeSensorname,room= homeRoomName, motionId= motionSensorID, motionValue= fmotionValue, motionBatValue=motionBatteryValue, doorId= doorSensorID, doorValue= fdoorValue, doorBatteryValue= doorBatteryValue, smokeId= smokeSensorID, smokeValue= fsmokeValue, smokeBatteryValue=smokeBatteryValue, Label= 0) 
+                    fslmessage = json.dumps(fiolSensorObj.__dict__)
+                    sendIOTmessage(json.loads(fslmessage))
 
                 #Older Event Processing
                 moValues =[]
@@ -712,6 +785,36 @@ while True:
                 lightsSensorObj= tempSensor(name=sensorName,room=homeRoomName, humSensorName=humSensorName, luxSensorName=luxsensorName, lightSensorName=lightSensorName, time= dateTime, tempId= tempSensorID, tempValue= tempValue, humId= humidityId, humValue= humidityValue, luxId= luxSensorID, luxValue= luxSensorValue, lightId= lightsSensorID, lightEnergy= lightsEnergy, lightPower= lightsPower, lightDimValue= lightsSensorValue, Label= 1)
                 tmessage = json.dumps(lightsSensorObj.__dict__)
                 sendIOTmessage(json.loads(tmessage))
+		
+		#Send Fake Data
+                if SendFakeTempData == True:
+                    if tempSensorID != 0:
+                        ftempValue = fakedatatemp(tvalue="Temp")
+                    else:
+                       ftempValue =0
+                    
+                    if humidityId != 0:
+                        fhumValue = fakedatatemp(tvalue="Hum")
+                    else:
+                        fhumValue = 0
+
+                    if luxSensorID != 0:
+                        fluxValue = fakedatatemp(tvalue="Lux")
+                    else:
+                        fluxValue = 0
+
+                    if lightsSensorID != 0:
+                        flightsSensorValue = fakedatatemp(tvalue="Dim")
+                        flightPower = fakedatatemp(tvalue="LPower")
+                        flightEnergy = fakedatatemp(tvalue="LEnergy")
+                    else:
+                        flightsSensorValue= 0
+                        flightEnergy = 0
+                        flightPower = 0
+
+                    flightsSensorObj= tempSensor(name=sensorName,room=homeRoomName, humSensorName=humSensorName, luxSensorName=luxsensorName, lightSensorName=lightSensorName, time= dateTime, tempId= tempSensorID, tempValue= ftempValue, humId= humidityId, humValue= fhumValue, luxId= luxSensorID, luxValue= fluxValue, lightId= lightsSensorID, lightEnergy= flightEnergy, lightPower= flightPower, lightDimValue= flightsSensorValue, Label= 0)
+                    ftmessage = json.dumps(flightsSensorObj.__dict__)
+                    sendIOTmessage(json.loads(ftmessage))
 
                 
 
@@ -781,6 +884,18 @@ while True:
                         vmessage = json.dumps(deviceObj.__dict__)
                         sendIOTmessage(json.loads(vmessage))
                         #print(vmessage)
+			#Send Fake Data
+
+                        if SendFakePowerData == True:
+                            fAmpComsumed= fakedataPower(fvalue="Amp")
+                            fEnergyConsumed= fakedataPower(fvalue="Energy")
+                            fVoltageValue= fakedataPower(fvalue="Volt")
+                            fActualMoneyConsumed= fakedataPower(fvalue="Euro")
+                            fPowerConsumed= fakedataPower(fvalue="Energy")
+                            #Create Fake Object
+                            fdeviceObj = powerSensor(name= deviceName, room= homeRoomName, time=dateTime, AmpComsumed= fAmpComsumed, EnergyConsumed= fEnergyConsumed, VoltageValue= fVoltageValue, ActualEnergyConsumed= sconsumption, ActualMoneyConsumed= fActualMoneyConsumed, Label= 0, PowerConsumed= fPowerConsumed)
+                            lmessage = json.dumps(fdeviceObj.__dict__)
+                            sendIOTmessage(json.loads(lmessage))
 
                     except Exception as e:
                         logging.error(e)
