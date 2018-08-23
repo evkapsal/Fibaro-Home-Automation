@@ -57,6 +57,9 @@ Microsoft Azure Services that being used:
 2. Azure Stream Analytics Queries for Table Storage and Power BI API.
 3. Home Network Bandwidth new Object for analytics and visualization.
 4. Power BI API Support 
+5. Serverless Logic App and Service Bus for Notification in mobile/mail/sms/etc
+6. Home Behavior Analytics with PCA- Anomaly Detection. Trained Model (In Azure ML Gallery Soon)
+
 
 **Power BI Pictures**
 
@@ -72,7 +75,6 @@ Microsoft Azure Services that being used:
 
 1. **Under Development* Home Behavior Analytics with PCA- Anomaly Detection. Trained Model coming soon...
 2. **Under Development* Serverless Function for Device Recognition (Power Consumption)
-3. **Under Development* Serverless Logic App and Service Bus for Notification in mobile/mail/sms/etc..
 
 
 
