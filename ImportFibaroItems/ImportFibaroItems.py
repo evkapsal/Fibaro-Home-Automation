@@ -871,7 +871,7 @@ while True:
                                 fActualMoneyConsumed= fakedataPower(fvalue="Euro")
                                 fPowerConsumed= fakedataPower(fvalue="Energy")
                                 #Create Fake Object
-                                fdeviceObj = powerSensor(name= deviceName, room= homeRoomName, time=dateTime, AmpComsumed= fAmpComsumed, EnergyConsumed= fEnergyConsumed, VoltageValue= fVoltageValue, ActualEnergyConsumed= sconsumption, ActualMoneyConsumed= fActualMoneyConsumed, Label= 1, PowerConsumed= fPowerConsumed)
+                                fdeviceObj = powerSensor(name= deviceName, room= homeRoomName, time=dateTime, AmpComsumed= fAmpComsumed, EnergyConsumed= fEnergyConsumed, VoltageValue= fVoltageValue, ActualEnergyConsumed= sconsumption, ActualMoneyConsumed= fActualMoneyConsumed, Label= 0, PowerConsumed= fPowerConsumed)
                                 lmessage = json.dumps(fdeviceObj.__dict__)
                                 sendIOTmessage(json.loads(lmessage))
                     
